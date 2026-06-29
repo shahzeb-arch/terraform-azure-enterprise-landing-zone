@@ -1,0 +1,35 @@
+Tenant Root Group        ← Azure auto-banata hai, Terraform isse manage NAHI karta
+└── contoso (Intermediate Root)   ← yahan se tum start karte ho
+    ├── Platform
+    │   ├── Identity
+    │   ├── Management
+    │   └── Connectivity
+    ├── Landing Zones
+    │   ├── Corp
+    │   └── Online
+    ├── Sandbox
+    └── Decommissioned
+
+
+Creation ka flow (order matters)
+
+Intermediate Root MG banao (parent = Tenant Root ID).
+2nd level (Platform, Landing Zones, Sandbox, Decommissioned) — parent = Intermediate Root.
+3rd level (Identity/Management/Connectivity, Corp/Online) — parent = unke upar wala.
+Subscriptions ko leaf MGs se associate karo.
+(Baad me) Azure Policy har MG scope pe assign hoti hai — yahi MG hierarchy ka asli faida.
+Locks optional, critical MGs pe.
+
+
+
+
+Resource	Kaam
+azurerm_management_group
+MG node khud banata hai (hierarchy)
+azurerm_management_group_subscription_association
+Subscription ko MG se jodta hai (modern, alag resource)
+azurerm_management_lock
+MG/sub/RG pe CanNotDelete ya ReadOnly lock
+azurerm_resource_management_private_link
+ARM ko private (internet ke bina) manage karne ka private link — advanced/connectivity
+azurerm_resource_management_private_link_association

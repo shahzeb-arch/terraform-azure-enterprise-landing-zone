@@ -35,6 +35,18 @@ variable "default_outbound_access_enabled" {
   default = true
 }
 
+variable "private_endpoint_network_policies" {
+  type        = string
+  description = "Private endpoint network policies (Enabled, Disabled, NetworkSecurityGroupEnabled, RouteTableEnabled)."
+  default     = "Enabled"
+}
+
+variable "private_link_service_network_policies_enabled" {
+  type        = bool
+  description = "Whether network policies are enabled for Private Link service on the subnet."
+  default     = true
+}
+
 variable "service_endpoint_policy_ids" {
   type    = list(string)
   default = []

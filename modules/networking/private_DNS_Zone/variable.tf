@@ -1,0 +1,34 @@
+variable "private_dns_zone_name" {
+  type        = string
+  description = "The name of the Private DNS Zone. For Private Endpoints it must follow the Azure privatelink.* naming schema."
+}
+
+variable "resource_group_name" {
+  type        = string
+  description = "The name of the Resource Group."
+}
+
+variable "soa_record" {
+  type = object({
+    email                   = string
+    expire_time_in_seconds  = number
+    minimum_ttl_in_seconds  = number
+    refresh_time_in_seconds = number
+    retry_time_in_seconds   = number
+    ttl_in_seconds          = number
+    soa_tags                = optional(map(string), {})
+  })
+  description = "Optional SOA record for the Private DNS Zone."
+  default     = null
+
+  validation {
+    condition     = var.soa_record == null || can(regex(".+@.+", var.soa_record.email))
+    error_message = "Invalid SOA email."
+  }
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the Private DNS Zone."
+  default     = {}
+}

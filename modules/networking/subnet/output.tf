@@ -1,11 +1,14 @@
 output "id" {
-  value = azurerm_subnet.subnet.id
+  description = "Subnet resource ID."
+  value       = azurerm_subnet.this.id
 }
 
 output "name" {
-  value = azurerm_subnet.subnet.name
+  description = "Subnet name."
+  value       = azurerm_subnet.this.name
 }
 
 output "address_prefixes" {
-  value = azurerm_subnet.subnet.address_prefixes
+  description = "Address prefixes assigned to the subnet."
+  value       = azurerm_subnet.this.address_prefixes
 }

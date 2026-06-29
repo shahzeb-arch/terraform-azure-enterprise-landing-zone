@@ -1,6 +1,14 @@
-output "resource_GUID" {
-  value = azurerm_nat_gateway.example.resource_guid
-}
 output "id" {
-  value = azurerm_nat_gateway.example.id
+  description = "NAT Gateway resource ID."
+  value       = azurerm_nat_gateway.this.id
+}
+
+output "name" {
+  description = "NAT Gateway name."
+  value       = azurerm_nat_gateway.this.name
+}
+
+output "resource_guid" {
+  description = "NAT Gateway resource GUID."
+  value       = azurerm_nat_gateway.this.resource_guid
 }
