@@ -1,0 +1,140 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: [main, master, dev, uat]
+    paths:
+      - "environment/**"
+      - "modules/**"
+      - ".github/workflows/terraform-ci.yml"
+  pull_request:
+    branches: [main, master, dev, uat]
+    paths:
+      - "environment/**"
+      - "modules/**"
+      - ".github/workflows/terraform-ci.yml"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  terraform:
+    name: Validate (${{ matrix.layer }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        layer:
+          - aks
+          - backup
+          - compute
+          - connectivity
+          - data
+          - diagnostics
+          - governance
+          - landing-zone-corp
+          - management
+          - monitoring
+          - networking
+          - security
+          - sentinel
+
+    defaults:
+      run:
+        working-directory: environment/dev/${{ matrix.layer }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.8.0"
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+        working-directory: .
+
+      - name: Terraform init
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+  terraform-qa-governance:
+    name: Validate (qa/governance)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: environment/qa/governance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.8.0"
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  terraform-prod-governance:
+    name: Validate (prod/governance)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: environment/prod/governance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.8.0"
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Lint modules
+        run: tflint --recursive
+        working-directory: modules
+
+      - name: Lint environments
+        run: tflint --recursive
+        working-directory: environment
+
+  tfsec:
+    name: TFSec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run TFSec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: .
+          soft_fail: true
+
+  checkov:
+    name: Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          soft_fail: true
+          output_format: cli
