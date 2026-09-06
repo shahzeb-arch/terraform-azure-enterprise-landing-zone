@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K8s Architect Playbook</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="#326ce5" stroke-width="1.5" fill="#326ce522"/>
+            <circle cx="12" cy="12" r="3" fill="#326ce5"/>
+          </svg>
+          K8s <span>Learn</span>
+        </div>
+        <div class="sidebar-sub">Architect Playbook — All topics</div>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="search-input" placeholder="Search topic..." autocomplete="off" />
+      </div>
+      <nav class="topic-nav" id="topic-nav"></nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb" id="breadcrumb"><strong>K8s Architect Playbook</strong></div>
+        <div class="slide-counter" id="slide-counter"></div>
+      </header>
+
+      <div class="content-area">
+        <section class="slide-panel" id="slide-panel"></section>
+        <aside class="arch-panel">
+          <div class="arch-title">Live Architecture Map</div>
+          <div class="arch-diagram" id="arch-diagram"></div>
+        </aside>
+      </div>
+
+      <footer class="controls">
+        <button class="ctrl-btn" id="btn-home">Home</button>
+        <button class="ctrl-btn" id="btn-prev">← Prev</button>
+        <div class="progress-dots" id="progress-dots"></div>
+        <button class="ctrl-btn primary" id="btn-next">Next →</button>
+        <button class="ctrl-btn ask-toggle" id="btn-ask" title="Kubernetes Assistant">Assistant</button>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Ask panel -->
+  <div class="ask-panel" id="ask-panel" hidden>
+    <div class="ask-header">
+      <strong>Kubernetes Assistant</strong>
+      <span class="ask-badge">Ready</span>
+      <button class="ask-close" id="ask-close" aria-label="Close">×</button>
+    </div>
+    <div class="ask-messages" id="ask-messages">
+      <div class="ask-msg bot ask-welcome">
+        <p class="ask-greeting">Assalamu Alaikum / Namaste</p>
+        <p class="ask-welcome-title">Welcome to Kubernetes</p>
+        <p>Your architect-level guide — from cluster design and CIDR planning to security, GitOps, and production troubleshooting. Ask anything; get clear, practical answers built for solution architects.</p>
+        <p class="ask-examples-label">You can start with:</p>
+        <p class="ask-examples">
+          <button type="button" class="ask-chip">Deployment kya hai?</button>
+          <button type="button" class="ask-chip">Key Vault kaise link kare?</button>
+          <button type="button" class="ask-chip">NetworkPolicy kyun use karte hain?</button>
+        </p>
+      </div>
+    </div>
+    <form class="ask-form" id="ask-form">
+      <input type="text" id="ask-input" placeholder="Ask about Kubernetes..." autocomplete="off" />
+      <button type="submit" class="ctrl-btn primary">Send</button>
+    </form>
+  </div>
+
+  <script src="topics-catalog.js"></script>
+  <script src="topics-arch-map.js"></script>
+  <script src="topics-slides-foundation.js"></script>
+  <script src="topics-slides-v2-architect.js"></script>
+  <script src="topics-slides-workloads-deep.js"></script>
+  <script src="topics-slides-deep-extras.js"></script>
+  <script src="topics-slides-core.js"></script>
+  <script src="topics-slides-extended.js"></script>
+  <script src="topics-slides-production.js"></script>
+  <script src="ask-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
