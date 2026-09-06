@@ -32,3 +32,18 @@ output "nat_gateway_ids" {
   description = "Map of NAT Gateway IDs."
   value       = { for k, m in module.nat_gateway : k => m.id }
 }
+
+output "public_ip_ids" {
+  description = "Map of public IP IDs."
+  value       = { for k, m in module.public_ip : k => m.id }
+}
+
+output "private_dns_zone_ids" {
+  description = "Private DNS zone IDs."
+  value       = { for k, m in module.private_dns_zone : k => m.id }
+}
+
+output "private_dns_vnet_link_ids" {
+  description = "Private DNS VNet link IDs."
+  value       = { for k, m in module.private_dns_vnet_link : k => m.id }
+}

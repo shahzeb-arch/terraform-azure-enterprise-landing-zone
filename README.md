@@ -1,111 +1,88 @@
-Resource tab banao jab:
+# Azure CAF Enterprise Landing Zone
 
-Reusable ho
-Secure ho
-Variable driven ho
-Dynamic block support ho
-for_each support ho
-Diagnostic settings attach ho sake
-Private endpoint support ho sake
-RBAC support ho sake
+Production-grade Terraform implementation of the Microsoft Cloud Adoption Framework (CAF) Enterprise Landing Zone on Azure. Modular, layer-based state, and security-first defaults.
 
-Agar har module me ye 8 cheezein hain, to tumhara ELZ production-grade hoga.
+## Quick start
 
+```powershell
+# 1. Bootstrap remote state (one-time)
+cd modules/foundation/state-backend
+terraform init && terraform apply -var="location=East US" -var="storage_account_name=stterraformstate<unique>"
 
-terraform-landingzone/
-│
-├── environments/
-│   ├── dev/
-│   ├── qa/
-│   └── prod/
-│
-├── modules/
-│   │
-│   ├── governance/
-│   │   ├── management-group/
-│   │   ├── subscription-association/
-│   │   ├── policy/
-│   │   ├── role-assignment/
-│   │   └── budget/
-│   │
-│   ├── networking/
-│   │   ├── resource-group/
-│   │   ├── vnet/
-│   │   ├── subnet/
-│   │   ├── nsg/
-│   │   ├── route-table/
-│   │   ├── nat-gateway/
-│   │   ├── firewall/
-│   │   ├── firewall-policy/
-│   │   ├── private-dns-zone/
-│   │   └── vnet-peering/
-│   │
-│   ├── security/
-│   │   ├── managed-identity/
-│   │   ├── key-vault/
-│   │   ├── private-endpoint/
-│   │   ├── defender/
-│   │   └── locks/
-│   │
-│   ├── monitoring/
-│   │   ├── log-analytics/
-│   │   ├── diagnostic-settings/
-│   │   ├── action-group/
-│   │   └── alerts/
-│   │
-│   ├── aks/
-│   │   ├── cluster/
-│   │   ├── nodepool/
-│   │   └── extensions/
-│   │
-│   └── shared/
-│       ├── naming/
-│       ├── tags/
-│       └── locals/
-│
-├── backend/
-│   ├── dev.hcl
-│   ├── qa.hcl
-│   └── prod.hcl
-│
-├── scripts/
-│
-└── pipelines/
+# 2. Deploy a layer (example: networking)
+cd environment/dev/networking
+terraform init -backend-config=../../../backend/dev.hcl -backend-config="key=dev/networking/terraform.tfstate"
+terraform plan -var-file=terraform.tfvars
+terraform apply -var-file=terraform.tfvars
 
-The module supports:
+# 3. Validate all dev layers locally
+./scripts/validate-all.ps1
+```
 
-Creating a new virtual network
-Creating a new subnet
-Creating a new virtual network peering
-Associating DNS servers with a virtual network
-Associating a DDOS protection plan with a virtual network
-Associating a network security group with a subnet
-Associating a route table with a subnet
-Associating a service endpoint with a subnet
-Associating a virtual network gateway with a subnet
-Assigning delegations to subnets
-IPAM pool allocation for virtual network address space
-IPAM pool allocation for individual subnets
-Choice of IPAM or traditional static addressing per virtual network
+See [docs/ELZ-DEPLOYMENT-GUIDE.md](docs/ELZ-DEPLOYMENT-GUIDE.md) for full apply order and [docs/ELZ-ARCHITECTURE.md](docs/ELZ-ARCHITECTURE.md) for hub-spoke design.
 
+## Module coverage
 
+| Category | Modules |
+|----------|---------|
+| **Foundation** | resourceGroup, management-group, subscription, management-group-subs-association, subscription-association, state-backend, management-lock, management-private-link |
+| **Networking** | virtualNetwork, subnet, networkSecurityGroup, routeTable, nat_gateway, publicIP, private_DNS_vnet_link, virtual_network-peering, firewall, firewall-policy, bastion, load-balancer, vpn-gateway, expressroute-gateway, ddos-protection-plan, application-gateway, frontdoor |
+| **Connectivity** | (environment layer wiring firewall, bastion, peering) |
+| **Security** | key-vault, managed-identity, private-endpoint, private-dns-zone-group, defender, locks, disk-encryption-set |
+| **Monitoring** | log-analytics, diagnostics-settings, action-group, alerts, sentinel, data-collection-rule |
+| **Governance** | policy, initiative, policy-assignment, role-definition, role-assignment, budget |
+| **Management** | automation-account |
+| **Data** | storage-account |
+| **Compute** | linux_virtualMachine, linux_vmss, windows-vmss, networkInterface, availability-set |
+| **AKS** | aks-cluster, nodepool, extensions |
+| **Shared** | naming |
 
-Step 1: Leaf module banao
-         modules/virtual-network/  ← flat variables + dynamic blocks
+## Environment layers
 
-Step 2: (Baad me) Pattern module banao
-         modules/spoke-network/    ← VNet + subnet + NSG leaf modules call
+| Layer | Dev path | Purpose |
+|-------|----------|---------|
+| Foundation | `environment/dev/foundation` | Management groups, subscriptions |
+| Networking | `environment/dev/networking` | Hub VNet, subnets, NSG, routes |
+| Connectivity | `environment/dev/connectivity` | Firewall, bastion, peering |
+| Security | `environment/dev/security` | Key Vault, identities, Defender |
+| Monitoring | `environment/dev/monitoring` | Log Analytics, action groups |
+| Sentinel | `environment/dev/sentinel` | Sentinel onboarding |
+| Governance | `environment/dev/governance` | Policy, RBAC, budgets |
+| Management | `environment/dev/management` | Automation accounts |
+| Diagnostics | `environment/dev/diagnostics` | Cross-layer diagnostic settings |
+| Compute | `environment/dev/compute` | VMs and VMSS |
+| AKS | `environment/dev/aks` | Kubernetes platform |
+| Landing zone | `environment/dev/landing-zone-corp` | Corp spoke VNet + hub peering |
 
-Step 3: Environment se call karo
-         environments/prod/main.tf ← for_each se tumhara module
-Make in mind before writing code
+QA (`10.1.0.0/16`, `rg-qa-*`) and Prod (`10.2.0.0/16`, `rg-prod-*`) mirror all dev layers under `environment/qa/*` and `environment/prod/*`.
 
-         1. Required Arguments
-2. Optional Arguments
-3. Nested Blocks
-4. Attributes (Outputs)
-5. Validation
-6. Security
-7. Monitoring
-8. Lifecycle (Need?)
-9. Timeouts (Need?)
+## Backend configuration
+
+| Environment | Config file | State key pattern |
+|-------------|-------------|-------------------|
+| Dev | `backend/dev.hcl` | `dev/<layer>/terraform.tfstate` |
+| QA | `backend/qa.hcl` | `qa/<layer>/terraform.tfstate` |
+| Prod | `backend/prod.hcl` | `prod/<layer>/terraform.tfstate` |
+
+## CI/CD
+
+GitHub Actions (`.github/workflows/terraform-ci.yml`):
+
+- `terraform validate` matrix for all 12 dev layers
+- Sample validate for qa/prod foundation
+- **TFLint** on modules and environments
+- **TFSec** security scanning
+- **Checkov** policy scanning
+
+## Policies
+
+CAF initiative references and assignment guidance: [policies/caf/README.md](policies/caf/README.md)
+
+## Design principles
+
+Every module includes `main.tf`, `variable.tf`, `output.tf`, and `README.md` with:
+
+- Primary resource label `this`
+- Production-safe defaults (TLS 1.2, no public access, private endpoints)
+- Dynamic blocks and `for_each` support at environment layers
+- Diagnostic settings, RBAC, and private endpoint patterns where applicable

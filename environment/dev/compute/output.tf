@@ -17,3 +17,18 @@ output "linux_vmss_ids" {
   description = "Map of Linux VMSS IDs."
   value       = { for k, m in module.linux_vmss : k => m.id }
 }
+
+output "service_plan_ids" {
+  description = "App Service plan IDs."
+  value       = { for k, m in module.service_plan : k => m.id }
+}
+
+output "app_service_ids" {
+  description = "Web app IDs."
+  value       = { for k, m in module.app_service : k => m.id }
+}
+
+output "function_app_ids" {
+  description = "Function app IDs."
+  value       = { for k, m in module.function_app : k => m.id }
+}

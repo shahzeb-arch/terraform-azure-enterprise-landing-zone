@@ -28,10 +28,11 @@ variable "virtual_networks" {
 
 variable "subnets" {
   type = map(object({
-    subnet_name          = string
-    resource_group_name  = string
-    virtual_network_name = string
-    address_prefixes     = list(string)
+    subnet_name                       = string
+    resource_group_name               = string
+    virtual_network_name              = string
+    address_prefixes                  = list(string)
+    private_endpoint_network_policies = optional(string, "Enabled")
   }))
 }
 
@@ -94,6 +95,63 @@ variable "nat_gateway" {
     idle_timeout_in_minutes = optional(number, 10)
     zones                   = optional(list(string), ["1"])
     tags                    = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "public_ips" {
+  description = "Public IP addresses (for NAT Gateway outbound)."
+  type = map(object({
+    public_ip_name      = string
+    resource_group_name = string
+    location            = string
+    allocation_method   = optional(string, "Static")
+    sku                 = optional(string, "Standard")
+    sku_tier            = optional(string, "Regional")
+    zones               = optional(list(string), ["1"])
+    tags                = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "nat_gateway_associations" {
+  description = "Associate NAT Gateways with subnets and public IPs."
+  type = map(object({
+    subnet_keys    = list(string)
+    public_ip_keys = optional(list(string), [])
+  }))
+  default = {}
+}
+
+variable "private_dns_zones" {
+  description = "Private DNS zones for Private Link (privatelink.*)."
+  type = map(object({
+    private_dns_zone_name = string
+    resource_group_name   = string
+    soa_record = optional(object({
+      email                   = string
+      expire_time_in_seconds  = number
+      minimum_ttl_in_seconds  = number
+      refresh_time_in_seconds = number
+      retry_time_in_seconds   = number
+      ttl_in_seconds          = number
+      soa_tags                = optional(map(string), {})
+    }))
+    tags = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "private_dns_vnet_links" {
+  description = "Link private DNS zones to virtual networks."
+  type = map(object({
+    private_dns_zone_link_name = string
+    resource_group_name        = string
+    private_dns_zone_key       = string
+    virtual_network_key        = string
+    registration_enabled       = optional(bool, false)
+    resolution_policy          = optional(string, "Default")
+    tags                       = optional(map(string), {})
   }))
   default = {}
 }
